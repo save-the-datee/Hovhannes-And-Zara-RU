@@ -1095,7 +1095,7 @@ window.submitRSVP = async function() {
   var btn = document.querySelector('.rsvp-btn');
   var attendVal = document.querySelector('input[name="attend"]:checked');
   var sideVal = document.querySelector('input[name="side"]:checked');
-  var attendText = (attendVal && attendVal.value === 'yes') ? 'Да ✓' : 'Нет ✗';
+  var attendText = (attendVal && attendVal.value === 'yes') ? 'Այո ✓' : 'Ոչ ✗';
   var isYes = attendVal && attendVal.value === 'yes';
 
   var name = '', guests = '0';
@@ -1130,7 +1130,7 @@ window.submitRSVP = async function() {
   }
 
   var comment = document.getElementById('rsvp-comment').value.trim();
-  var sideText = (sideVal && sideVal.value === 'groom') ? 'Жениха' : 'Невесты';
+  var sideText = (sideVal && sideVal.value === 'groom') ? 'Փեսայի' : 'Հարսի';
 
   const section = document.querySelector('.rsvp-section');
   if (section) {
