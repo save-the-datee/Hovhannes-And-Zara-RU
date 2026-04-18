@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="hy">
 <head>
@@ -234,6 +233,33 @@ body {
 @keyframes slideInLeft { from{opacity:0;transform:translateX(-48px)} to{opacity:1;transform:translateX(0)} }
 .slide-in-left { opacity:0; transform:translateX(-48px); }
 .slide-in-left.visible { animation: slideInLeft 0.6s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+/* ── SCROLL INDICATOR ── */
+.scroll-hint {
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: 44px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  cursor: pointer;
+  animation: fadeUp 1.6s ease 0.8s both;
+}
+.scroll-hint-chevron {
+  display: block;
+  animation: scrollBounce 1.8s ease-in-out infinite;
+}
+.scroll-hint-chevron:nth-child(2) { animation-delay: 0.2s; opacity: 0.55; }
+.scroll-hint-chevron:nth-child(3) { animation-delay: 0.4s; opacity: 0.3; }
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(5px); }
+}
 
 /* ── INVITE TEXT ── */
 .section-light {
@@ -783,6 +809,12 @@ function openInvitation() {
 
   <div class="hero-std">SAVE<br>THE<br>DATE</div>
 
+  <div class="scroll-hint" onclick="document.querySelector('.countdown-section').scrollIntoView({behavior:'smooth'})">
+    <svg class="scroll-hint-chevron" width="30" height="12" viewBox="0 0 30 12" fill="none" xmlns="http://www.w3.org/2000/svg"><polyline points="2,2 15,10 28,2" stroke="rgba(255,255,255,0.85)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="scroll-hint-chevron" width="30" height="12" viewBox="0 0 30 12" fill="none" xmlns="http://www.w3.org/2000/svg"><polyline points="2,2 15,10 28,2" stroke="rgba(255,255,255,0.85)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="scroll-hint-chevron" width="30" height="12" viewBox="0 0 30 12" fill="none" xmlns="http://www.w3.org/2000/svg"><polyline points="2,2 15,10 28,2" stroke="rgba(255,255,255,0.85)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+
   <div class="hero-names">
     <span class="hero-name">Ованнес</span>
     <span class="hero-heart">
@@ -819,7 +851,7 @@ function openInvitation() {
 <!-- INVITE TEXT -->
 <section class="section-light">
   <p class="script-title slide-in-left">Дорогие друзья и близкие,</p>
-  <p class="invite-body">От всего сердца приглашаем вас<br>разделить с нами самый красивый <br>и важный день нашей <br>жизни — нашу свадьбу.</p>
+  <p class="invite-body">От всего сердца приглашаем вас<br>разделить с нами самый красивый<br>и важный день нашей<br>жизни — нашу свадьбу.</p>
 </section>
 
 <!-- DATE PICKER -->
@@ -902,7 +934,7 @@ function openInvitation() {
 <!-- DRESS CODE -->
 <div class="dress-strip">
   <div class="dress-label slide-in-left">Dress Code</div>
-  <div class="dress-text"><span class="dress-mobile">Оставим белый цвет в этот день<br>только невесте — <br>приходите в самом ярком настроении</span><span class="dress-desktop">Оставим белый цвет в этот день только невесте — <br>приходите в самом ярком настроении</span></div>
+  <div class="dress-text"><span class="dress-mobile">Оставим белый цвет в этот день только невесте —<br>приходите в самом ярком настроении</span><span class="dress-desktop">Оставим белый цвет в этот день только невесте —<br>приходите в самом ярком настроении</span></div>
 </div>
 
 <!-- RSVP -->
@@ -930,6 +962,20 @@ function openInvitation() {
   <div class="input-row" id="rsvp-guests-row">
     <input class="rsvp-input full" id="rsvp-guests" type="number" min="1" step="1" placeholder="Количество гостей" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
     <div id="err-guests" style="display:none; color:#c0392b; font-size:13px; margin-top:5px; font-style:italic;">Пожалуйста, введите корректное число</div>
+  </div>
+
+  <div class="input-row" id="rsvp-phone-row">
+    <input class="rsvp-input full" id="rsvp-phone" type="tel" placeholder="Номер телефона" oninput="
+      var v = this.value;
+      var hasPlus = v.startsWith('+');
+      var digits = v.replace(/[^0-9]/g, '');
+      this.value = hasPlus ? '+' + digits : digits;
+    " onkeypress="
+      var ch = String.fromCharCode(event.which);
+      if (ch === '+' && this.selectionStart === 0 && !this.value.startsWith('+')) return true;
+      if (!/[0-9]/.test(ch)) event.preventDefault();
+    ">
+    <div id="err-phone" style="display:none; color:#c0392b; font-size:13px; margin-top:5px; font-style:italic;">Пожалуйста, введите корректный номер телефона</div>
   </div>
 
   <input class="rsvp-input full" id="rsvp-comment" type="text" placeholder="Комментарий">
@@ -1081,12 +1127,17 @@ document.addEventListener('DOMContentLoaded', function() {
 document.querySelectorAll('input[name="attend"]').forEach(function(radio) {
   radio.addEventListener('change', function() {
     var guestsRow = document.getElementById('rsvp-guests-row');
+    var phoneRow = document.getElementById('rsvp-phone-row');
     if (this.value === 'no') {
       guestsRow.style.display = 'none';
       document.getElementById('err-guests').style.display = 'none';
       document.getElementById('rsvp-guests').style.borderColor = '';
+      phoneRow.style.display = 'none';
+      document.getElementById('err-phone').style.display = 'none';
+      document.getElementById('rsvp-phone').style.borderColor = '';
     } else {
       guestsRow.style.display = 'block';
+      phoneRow.style.display = 'block';
     }
   });
 });
@@ -1097,23 +1148,25 @@ window.submitRSVP = async function() {
   var sideVal = document.querySelector('input[name="side"]:checked');
   var attendText = (attendVal && attendVal.value === 'yes') ? 'Այո ✓' : 'Ոչ ✗';
   var isYes = attendVal && attendVal.value === 'yes';
+  var name = document.getElementById('rsvp-name').value.trim();
 
-  var name = '', guests = '0';
+  var guests = '0', phone = '';
   var valid = true;
 
-  if (isYes) {
-    name = document.getElementById('rsvp-name').value.trim();
-    guests = document.getElementById('rsvp-guests').value.trim();
+  // Validate name always (both yes and no)
+  if (!name) {
+    document.getElementById('rsvp-name').style.borderColor = '#c0392b';
+    document.getElementById('err-name').style.display = 'block';
+    valid = false;
+  } else {
+    document.getElementById('rsvp-name').style.borderColor = '';
+    document.getElementById('err-name').style.display = 'none';
+  }
 
-    // Validate name
-    if (!name) {
-      document.getElementById('rsvp-name').style.borderColor = '#c0392b';
-      document.getElementById('err-name').style.display = 'block';
-      valid = false;
-    } else {
-      document.getElementById('rsvp-name').style.borderColor = '';
-      document.getElementById('err-name').style.display = 'none';
-    }
+  if (isYes) {
+
+    guests = document.getElementById('rsvp-guests').value.trim();
+    phone = document.getElementById('rsvp-phone').value.trim();
 
     // Validate guests
     var guestsNum = parseInt(guests, 10);
@@ -1126,8 +1179,21 @@ window.submitRSVP = async function() {
       document.getElementById('err-guests').style.display = 'none';
     }
 
+    // Validate phone
+    var phoneDigits = phone.replace(/^\+/, '');
+    if (!phone || phoneDigits.length < 5 || !/^\+?[0-9]+$/.test(phone)) {
+      document.getElementById('rsvp-phone').style.borderColor = '#c0392b';
+      document.getElementById('err-phone').style.display = 'block';
+      valid = false;
+    } else {
+      document.getElementById('rsvp-phone').style.borderColor = '';
+      document.getElementById('err-phone').style.display = 'none';
+    }
+
     if (!valid) return;
   }
+
+  if (!valid) return;
 
   var comment = document.getElementById('rsvp-comment').value.trim();
   var sideText = (sideVal && sideVal.value === 'groom') ? 'Փեսայի' : 'Հարսի';
@@ -1138,12 +1204,13 @@ window.submitRSVP = async function() {
   }
 
   try {
-    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyHT-9WTY5l_IMarZWVa-6ZWkCfQfWhI7Wn-lmMZu1OKHfEyyLbTw4EpecQxAmo4YjWuQ/exec';
+    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysys_1L87hpbiNoWre82wPyJOc47YTDLduICCKazUcl4GL4Mgr2uUIgK6JJU-YTXKybQ/exec';
     var params = new URLSearchParams({
       name: name,
       attend: attendText,
       side: sideText,
       guests: isYes ? guests : '0',
+      phone: isYes ? phone : '',
       comment: comment
     });
     await fetch(SCRIPT_URL + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
